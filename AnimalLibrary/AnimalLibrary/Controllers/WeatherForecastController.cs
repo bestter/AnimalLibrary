@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Serilog;
 
 namespace AnimalLibrary.Controllers
 {
@@ -11,12 +12,6 @@ namespace AnimalLibrary.Controllers
         "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
     };
 
-        private readonly ILogger<WeatherForecastController> _logger;
-
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
-        {
-            _logger = logger;
-        }
 
         [HttpGet]
         public IEnumerable<WeatherForecast> Get()
@@ -28,6 +23,29 @@ namespace AnimalLibrary.Controllers
                 Summary = Summaries[Random.Shared.Next(Summaries.Length)]
             })
             .ToArray();
+        }
+
+        [HttpGet("GetAll")]
+        public IEnumerable<TaxonomicRankType> GetAll(int id)
+        {
+            Log.Information($"In {nameof(TaxonomicRankTypeController)}.{nameof(GetAll)}");
+            try
+            {
+                DAL.TaxonomicRankTypeDal taxonomicRankTypeDal = new(System.Configuration.ConfigurationManager.ConnectionStrings["BloggingDatabase"].ConnectionString);
+                return taxonomicRankTypeDal.GetAll();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, $"Error in {nameof(GetAll)}");
+                throw;
+            }
+            //return Json(JsonSerializer.Serialize(trt));
+        }
+
+        public IEnumerable<TaxonomicRankType> GetAllTaxonomicRankType()
+        {
+            DAL.TaxonomicRankTypeDal taxonomicRankTypeDal = new(System.Configuration.ConfigurationManager.ConnectionStrings["BloggingDatabase"].ConnectionString);
+            return taxonomicRankTypeDal.GetAll();
         }
     }
 }

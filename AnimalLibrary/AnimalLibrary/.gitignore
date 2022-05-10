@@ -230,3 +230,7 @@ _Pvt_Extensions
 
 # FAKE - F# Make
 .fake/
+
+#logs
+[Ll]ogs/
+[Ll]og/
