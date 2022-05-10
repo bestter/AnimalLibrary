@@ -9,8 +9,9 @@ export class UpdateTaxonomicRankType extends Component {
             taxonomicRankTypeID: this.props.taxonomicRankType.taxonomicRankTypeID,
             parentTaxonomicRankTypeID: this.props.taxonomicRankType.parentTaxonomicRankTypeID,
             name: this.props.taxonomicRankType.name,
-            nameFr: this.props.taxonomicRankType.name,
-            loading: true
+            nameFr: this.props.taxonomicRankType.nameFr,
+            loading: true,
+            resetSelectedTRT: this.props.resetSelectedTRT
         };
     }
 
@@ -18,6 +19,7 @@ export class UpdateTaxonomicRankType extends Component {
         this.setState({ [event.target.name]: event.target.value });
     }
 
+    
     async handleSubmit(event) {
         event.preventDefault();
         
@@ -34,6 +36,7 @@ export class UpdateTaxonomicRankType extends Component {
 
         response.json().then(data => {
             console.dir(data);
+            this.state.resetSelectedTRT();
         });
 
     }
@@ -62,6 +65,7 @@ export class UpdateTaxonomicRankType extends Component {
                     </div>
                     <div className="mb-3">
                         <button type="submit" className="btn btn-primary">Save</button>
+                        <button type="button" className="btn btn-secondary" onClick={() => this.state.resetSelectedTRT()}>Return</button>
                     </div>
                 </form>
             </div>
@@ -85,6 +89,11 @@ export class ReadTaxonomicRankType extends Component {
         this.setState({ selectedTRT: taxonomicRankType });
     }
 
+    resetSelectedTRT() {
+        this.setState({ selectedTRT: null });
+        console.log('resetSelectedTRT');
+    }
+
     render() {
         if (this.state.selectedTRT == null) {
             return (
@@ -98,7 +107,7 @@ export class ReadTaxonomicRankType extends Component {
             );
         }
         else {
-            return <UpdateTaxonomicRankType taxonomicRankType={this.state.selectedTRT} />;
+            return <UpdateTaxonomicRankType taxonomicRankType={this.state.selectedTRT} resetSelectedTRT={() => this.resetSelectedTRT() }/>;
         }
     }
     async populateTaxonomicRankType() {

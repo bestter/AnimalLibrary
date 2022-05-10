@@ -55,12 +55,13 @@ namespace AnimalLibrary.Controllers
 
         [HttpPost]
         [Route("UpdateTaxonomicRankType")]
-        public void UpdateTaxonomicRankType(TaxonomicRankType taxonomicRankType)
+        public bool UpdateTaxonomicRankType(TaxonomicRankType taxonomicRankType)
         {
             try
             {
                 DAL.TaxonomicRankTypeDal taxonomicRankTypeDal = new(ConnectionString);
                 taxonomicRankTypeDal.Update(taxonomicRankType);
+                return true;
             }
             catch (Exception ex)
             {
