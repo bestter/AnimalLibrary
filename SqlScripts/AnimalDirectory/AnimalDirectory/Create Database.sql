@@ -1,7 +1,7 @@
 -- =============================================
 -- Create database template
 -- =============================================
-/*
+
 USE master
 GO
 
@@ -18,6 +18,16 @@ CREATE DATABASE AnimalDirectoy
 GO
 
 USE AnimalDirectoy
+GO
+
+ALTER TABLE [dbo].[TaxonomicRank] DROP CONSTRAINT [FK_TaxonomicRank_TaxonomicRankTypeID]
+GO
+
+ALTER TABLE [dbo].[TaxonomicRank] DROP CONSTRAINT [FK_TaxonomicRank_TaxonomicRank]
+GO
+
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[TaxonomicRank]') AND type in (N'U'))
+DROP TABLE [dbo].[TaxonomicRank]
 GO
 
 IF OBJECT_ID('TaxonomicRankType', 'U') IS NOT NULL
@@ -38,23 +48,35 @@ CREATE TABLE TaxonomicRankType
 )
 GO
 
-IF OBJECT_ID('TaxonomicRank', 'U') IS NOT NULL
-  DROP TABLE TaxonomicRank
+
+CREATE TABLE [dbo].[TaxonomicRank](
+	[TaxonomicRankID] [int] IDENTITY(1,1) NOT NULL,
+	[Name] [nvarchar](256) NOT NULL,
+	[TaxonomicRankTypeID] [int] NOT NULL,
+	[ParentTaxonomicRankID] [int] NULL,
+ CONSTRAINT [PkTaxonomicRankID] PRIMARY KEY CLUSTERED 
+(
+	[TaxonomicRankID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
 GO
 
-CREATE TABLE TaxonomicRank
-(
-	TaxonomicRankID int IDENTITY (1,1) NOT NULL, 
-	Name NVARCHAR(256) NOT NULL,
-	TaxonomicRankTypeID INT NOT NULL,
-    CONSTRAINT PkTaxonomicRankID PRIMARY KEY (TaxonomicRankID),
-	CONSTRAINT FK_TaxonomicRank_TaxonomicRankTypeID FOREIGN KEY (TaxonomicRankTypeID)
-        REFERENCES dbo.TaxonomicRankType (TaxonomicRankTypeID)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
-)
+ALTER TABLE [dbo].[TaxonomicRank]  WITH CHECK ADD  CONSTRAINT [FK_TaxonomicRank_TaxonomicRank] FOREIGN KEY([ParentTaxonomicRankID])
+REFERENCES [dbo].[TaxonomicRank] ([TaxonomicRankID])
 GO
-*/
+
+ALTER TABLE [dbo].[TaxonomicRank] CHECK CONSTRAINT [FK_TaxonomicRank_TaxonomicRank]
+GO
+
+ALTER TABLE [dbo].[TaxonomicRank]  WITH CHECK ADD  CONSTRAINT [FK_TaxonomicRank_TaxonomicRankTypeID] FOREIGN KEY([TaxonomicRankTypeID])
+REFERENCES [dbo].[TaxonomicRankType] ([TaxonomicRankTypeID])
+ON UPDATE CASCADE
+ON DELETE CASCADE
+GO
+
+ALTER TABLE [dbo].[TaxonomicRank] CHECK CONSTRAINT [FK_TaxonomicRank_TaxonomicRankTypeID]
+GO
+
 USE [AnimalDirectoy]
 GO
 --TOP

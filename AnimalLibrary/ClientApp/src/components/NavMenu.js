@@ -40,7 +40,10 @@ export class NavMenu extends Component {
                                     <NavLink tag={Link} className="text-dark" to="/fetch-data">Fetch data</NavLink>
                                 </NavItem>
                                 <NavItem>
-                                    <NavLink tag={Link} className="text-dark" to="/TaxonomicRankType">TaxonomicRankType</NavLink>
+                                    <NavLink tag={Link} className="text-dark" to="/TaxonomicRankType">Taxonomic Rank Type</NavLink>
+                                </NavItem>
+                                <NavItem>
+                                    <NavLink tag={Link} className="text-dark" to="/TaxonomicRank">Taxonomic Rank</NavLink>
                                 </NavItem>
                             </ul>
                         </Collapse>

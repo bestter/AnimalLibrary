@@ -95,27 +95,25 @@ namespace AnimalLibrary.DAL
                        ConnectionString);
             List<TaxonomicRankType> taxonomicRankTypes = new();
 
-            using (SqlCommand command = new(
-                queryString, connection))
+            using SqlCommand command = new(
+                queryString, connection);
+            connection.Open();
+            command.Parameters.Add("@Name", System.Data.SqlDbType.NVarChar, 256).Value = taxonomicRankType.Name;
+            command.Parameters.Add("@NameFr", System.Data.SqlDbType.NVarChar, 256).Value = taxonomicRankType.NameFr;
+
+            var paramParentTaxonomicRankTypeID = new SqlParameter("@ParentTaxonomicRankTypeID", System.Data.SqlDbType.Int);
+            if (taxonomicRankType.ParentTaxonomicRankTypeID.HasValue)
             {
-                connection.Open();
-                command.Parameters.Add("@Name", System.Data.SqlDbType.NVarChar, 256).Value = taxonomicRankType.Name;
-                command.Parameters.Add("@NameFr", System.Data.SqlDbType.NVarChar, 256).Value = taxonomicRankType.NameFr;
-
-                var paramParentTaxonomicRankTypeID = new SqlParameter("@ParentTaxonomicRankTypeID", System.Data.SqlDbType.Int);
-                if (taxonomicRankType.ParentTaxonomicRankTypeID.HasValue)
-                {
-                    paramParentTaxonomicRankTypeID.Value = taxonomicRankType.ParentTaxonomicRankTypeID.Value;
-                }
-                else
-                {
-                    paramParentTaxonomicRankTypeID.SqlValue = DBNull.Value;
-                }
-
-                command.Parameters.Add(paramParentTaxonomicRankTypeID);
-                command.Parameters.Add("@TaxonomicRankTypeID", System.Data.SqlDbType.Int).Value = taxonomicRankType.TaxonomicRankTypeID;
-                command.ExecuteNonQuery();
+                paramParentTaxonomicRankTypeID.Value = taxonomicRankType.ParentTaxonomicRankTypeID.Value;
             }
+            else
+            {
+                paramParentTaxonomicRankTypeID.SqlValue = DBNull.Value;
+            }
+
+            command.Parameters.Add(paramParentTaxonomicRankTypeID);
+            command.Parameters.Add("@TaxonomicRankTypeID", System.Data.SqlDbType.Int).Value = taxonomicRankType.TaxonomicRankTypeID;
+            command.ExecuteNonQuery();
         }
 
 
@@ -138,8 +136,7 @@ namespace AnimalLibrary.DAL
                 parentTaxonomicRankTypeID = null;
             }
 
-            TaxonomicRankType taxonomicRankType = new()
-            { TaxonomicRankTypeID = taxonomicRankTypeID, Name = name, NameFr = nameFr, ParentTaxonomicRankTypeID = parentTaxonomicRankTypeID };
+            TaxonomicRankType taxonomicRankType = new (taxonomicRankTypeID, name, nameFr, parentTaxonomicRankTypeID);
             return taxonomicRankType;
         }
     }
