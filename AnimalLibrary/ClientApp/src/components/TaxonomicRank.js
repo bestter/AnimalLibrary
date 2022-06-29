@@ -1,18 +1,19 @@
 import React, { Component } from 'react';
-
-
+import { TaxonomicRankTypeDropdown } from './TaxonomicRankTypeDropdown';
+import { TaxonomicRankDropdown } from './TaxonomicRankDropdown';
 
 
 export class UpdateTaxonomicRank extends Component {
 
     constructor(props) {
         super(props);
+        debugger;
         this.state = {
-            TaxonomicRankID: this.props.TaxonomicRank.TaxonomicRankID,
+            taxonomicRankID: this.props.TaxonomicRank.taxonomicRankID,
             parentTaxonomicRankID: this.props.TaxonomicRank.parentTaxonomicRankID,
             name: this.props.TaxonomicRank.name,
-            nameFr: this.props.TaxonomicRank.nameFr,
             loading: true,
+            taxonomicRankTypeId: this.props.TaxonomicRank.taxonomicRankTypeId,
             resetSelectedTR: this.props.resetSelectedTR,
             newElement: this.props.newElement
         };
@@ -21,14 +22,12 @@ export class UpdateTaxonomicRank extends Component {
     handleChange(event) {
         this.setState({ [event.target.name]: event.target.value });
     }
-
     
     async handleSubmit(event) {
         event.preventDefault();
-        
-        const data = { TaxonomicRankID: this.state.TaxonomicRankID, ParentTaxonomicRankID: this.state.parentTaxonomicRankID, name: this.state.name, TaxonomicRankTypeID: this.state.TaxonomicRankTypeID };
+        const data = { TaxonomicRankID: this.state.taxonomicRankID, ParentTaxonomicRankID: this.state.parentTaxonomicRankID, name: this.state.name, TaxonomicRankTypeId: this.state.taxonomicRankTypeId };
         var response;
-        if (this.state.newElement == false) {
+        if (this.state.newElement === false) {
             response = await fetch("values/UpdateTaxonomicRank", {
                 method: 'POST',
                 headers: {
@@ -66,20 +65,14 @@ export class UpdateTaxonomicRank extends Component {
                         <div id="TaxonomicRankIDHelp" className="form-text">ID</div>
                     </div>
                     <div className="mb-3">
-                        <label htmlFor="parentTaxonomicRankID" className="form-label">Parent's ID</label>
-                        <input type="number" className="form-control" id="parentTaxonomicRankID" name="parentTaxonomicRankID" value={this.state.parentTaxonomicRankID ?? -1} onChange={(e) => this.handleChange(e)} aria-describedby="parentTaxonomicRankIDHelp" />
+                        <label htmlFor="parentTaxonomicRankID" className="form-label">Parent's ID</label>                        
+                        <TaxonomicRankDropdown value={this.state.parentTaxonomicRankID} id="parentTaxonomicRankID" name="parentTaxonomicRankID" onChange={(e) => this.handleChange(e)} aria-describedby="parentTaxonomicRankIDHelp" />
                         <div id="parentTaxonomicRankIDHelp" className="form-text">Parent's ID</div>
                     </div>
                     <div className="mb-3">
-                        <label htmlFor="taxonomicRankTypeID" className="form-label">Rank type</label>
-                        {/*<input type="number" className="form-control" id="taxonomicRankTypeID" name="taxonomicRankTypeID" value={this.state.taxonomicRankTypeID ?? -1} onChange={(e) => this.handleChange(e)} aria-describedby="taxonomicRankTypeIDHelp" />*/}
-                        <select value={this.state.taxonomicRankTypeID ?? -1} onChange={(e) => this.handleChange(e)}>
-                            <option value="grapefruit">Pamplemousse</option>
-                            <option value="lime">Citron vert</option>
-                            <option selected value="coconut">Noix de coco</option>
-                            <option value="mango">Mangue</option>
-                        </select>
-                        <div id="taxonomicRankTypeIDHelp" className="form-text">taxonomicRankTypeID</div>
+                        <label htmlFor="taxonomicRankTypeId" className="form-label">Rank type</label>                        
+                        <TaxonomicRankTypeDropdown value={this.state.taxonomicRankTypeId} id="taxonomicRankTypeId" name="taxonomicRankTypeId" onChange={(e) => this.handleChange(e)} aria-describedby="taxonomicRankTypeIdHelp"/>
+                        <div id="taxonomicRankTypeIdHelp" className="form-text">taxonomicRankType</div>
                     </div>
                     <div className="mb-3">
                         <label htmlFor="=name" className="form-label">Name</label>
@@ -100,32 +93,41 @@ export class ReadTaxonomicRank extends Component {
 
     constructor(props) {
         super(props);
-        this.state = { TaxonomicRanks: [], loading: true, selectedTR: null, newTr: false, emptyTr: null };
+        this.state = { TaxonomicRanks: [], loading: true, selectedTR: null, newTr: false, emptyTr: null };        
     }
 
     componentDidMount() {
-        this.populateTaxonomicRank();
+        fetch('values/GetAllTaxonomicRank')
+            .then(resp => resp.json())
+            .then(data => this.setState({ TaxonomicRanks: data }));
+        fetch()
+            .then(resp => resp.json())
+            .then(data2 => this.setState({ emptyTr: data2, selectedTR: data2, loading: false }));
     }
-
+        
     edit(TaxonomicRank) {
         this.setState({ selectedTR: TaxonomicRank });
     }
 
     resetSelectedTR() {
-        this.setState({ selectedTR: null });
+        this.setState({ selectedTR: null, newTr: false });
         console.log('resetSelectedTR');
     }
 
     createElement() {
-        this.setState({ newTr: true });        
+        this.setState({ newTr: true, selectedTR: this.state.emptyTr });        
     }
 
+    
 
-    getCode() {
-        if (this.state.newTr == true) {
+    getCode() {        
+        if (this.state.newTr === true) {
             return <UpdateTaxonomicRank TaxonomicRank={this.state.emptyTr} resetSelectedTR={() => this.resetSelectedTR()} newElement={true} />;
         }
-        else if (this.state.selectedTR == null) {
+        else if (this.state.selectedTR && this.state.selectedTR.taxonomicRankID>0) {
+            return <UpdateTaxonomicRank TaxonomicRank={this.state.selectedTR} resetSelectedTR={() => this.resetSelectedTR()} newElement={false} />;
+        }
+        else if (this.state.selectedTR == null) {            
             return (
                 <div>
                     <ul className="list-group">
@@ -137,10 +139,7 @@ export class ReadTaxonomicRank extends Component {
                     </ul>                    
                 </div>
             );
-        }
-        else {
-            return <UpdateTaxonomicRank TaxonomicRank={this.state.selectedTRua} resetSelectedTR={() => this.resetSelectedTR()} newElement={ false } />;
-        }
+        }        
     }
 
     render() {
@@ -155,15 +154,7 @@ export class ReadTaxonomicRank extends Component {
             </div>
             );
     }
-    async populateTaxonomicRank() {
-        const response = await fetch('values/GetAllTaxonomicRank');
-        const data = await response.json();
-
-        const response2 = await fetch('values/GetEmptyTaxonomicRank');
-        const data2 = await response2.json();
-
-        this.setState({ TaxonomicRanks: data, loading: false, emptyTr: data2 });
-    }
+    
 }
 
 

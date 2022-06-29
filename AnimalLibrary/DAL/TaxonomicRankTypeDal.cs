@@ -14,7 +14,7 @@ namespace AnimalLibrary.DAL
             Log.Debug($"{nameof(connectionString)}: {connectionString}");
         }
 
-        public IEnumerable<TaxonomicRankType> GetAll()
+        public List<TaxonomicRankType> GetAll()
         {            
             const string queryString = @"SELECT [TaxonomicRankTypeID] 
                 ,[Name]

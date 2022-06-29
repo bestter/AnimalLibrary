@@ -4,11 +4,11 @@ namespace AnimalLibrary
 {
     public class TaxonomicRank : IEquatable<TaxonomicRank?>, IComparable, IComparable<TaxonomicRank>
     {
-        public TaxonomicRank(int taxonomicRankID, string name, TaxonomicRankType? taxonomicRankType, int? parentTaxonomicRankID)
+        public TaxonomicRank(int taxonomicRankID, string name, int? taxonomicRankTypeId, int? parentTaxonomicRankID)
         {
             TaxonomicRankID = taxonomicRankID;
             Name = name;
-            TaxonomicRankType = taxonomicRankType;
+            TaxonomicRankTypeId = taxonomicRankTypeId;
             ParentTaxonomicRankID = parentTaxonomicRankID;
         }
         #region properties
@@ -18,7 +18,7 @@ namespace AnimalLibrary
         [NotNull]
         public string Name { get; set; }
 
-        public TaxonomicRankType? TaxonomicRankType { get; set; }
+        public int? TaxonomicRankTypeId { get; set; }
 
         public int? ParentTaxonomicRankID { get; set; }
         #endregion

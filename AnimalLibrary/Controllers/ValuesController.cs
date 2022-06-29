@@ -110,7 +110,7 @@ namespace AnimalLibrary.Controllers
         public TaxonomicRank GetEmptyTaxonomicRank()
         {
             TaxonomicRankType taxonomicRankType = new(1, "test", "test",null);
-            return new TaxonomicRank(0, "Empty", taxonomicRankType, 0);
+            return new TaxonomicRank(0, "Empty", taxonomicRankType.TaxonomicRankTypeID, 0);
         }
 
         [HttpPost]
@@ -142,7 +142,7 @@ namespace AnimalLibrary.Controllers
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Error in {nameof(UpdateTaxonomicRank)}");
+                Log.Error(ex, $"Error in {nameof(InsertTaxonomicRank)}");
                 throw;
             }
         }
