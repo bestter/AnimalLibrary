@@ -2,8 +2,7 @@ import React, { Component } from 'react';
 
 export class TaxonomicRankTypeDropdown extends Component {
     constructor(props) {
-        super(props);    
-        debugger;
+        super(props);
         this.state = {            
             Value: this.props.value,
             onChange: this.props.onChange,

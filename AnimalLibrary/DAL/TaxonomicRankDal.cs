@@ -20,11 +20,11 @@ namespace AnimalLibrary.DAL
         private List<TaxonomicRankType> GetTaxonomicRankTypes()
         {
             TaxonomicRankTypeDal taxonomicRankTypeDal = new(ConnectionString);
-            return taxonomicRankTypeDal.GetAll();            
+            return taxonomicRankTypeDal.GetAll();
         }
 
-        public IEnumerable<TaxonomicRank> GetAll()
-        {            
+        public async Task<IEnumerable<TaxonomicRank>> GetAllAsync(CancellationToken cancellationToken)
+        {
             const string queryString = @"SELECT 
                 [TaxonomicRankID]
                 ,[Name]
@@ -39,13 +39,35 @@ namespace AnimalLibrary.DAL
 
             SqlCommand command = new(
                 queryString, connection);
-            connection.Open();
-            using SqlDataReader reader = command.ExecuteReader();
+            await connection.OpenAsync(cancellationToken);
+            using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
             if (reader.HasRows)
             {
-                while (reader.Read())
+                var posTaxonomicRankID = reader.GetOrdinal("TaxonomicRankID");
+                var posName = reader.GetOrdinal("Name");
+                var posTaxonomicRankTypeID = reader.GetOrdinal("TaxonomicRankTypeID");
+                var posParentTaxonomicRankID = reader.GetOrdinal("ParentTaxonomicRankID");
+
+                while (await reader.ReadAsync(cancellationToken))
                 {
-                    taxonomicRanks.Add(GetFromSqlDataReader(reader));
+                    var taxonomicRankID = await reader.GetFieldValueAsync<int>(posTaxonomicRankID, cancellationToken);
+                    var name = await reader.GetFieldValueAsync<string>(posName, cancellationToken);
+                    var taxonomicRankTypeID = await reader.GetFieldValueAsync<int>(posTaxonomicRankTypeID, cancellationToken);
+
+                    int? parentTaxonomicRankID;                    
+                    if (! await reader.IsDBNullAsync(posParentTaxonomicRankID, cancellationToken))
+                    {
+                        parentTaxonomicRankID = await reader.GetFieldValueAsync<int>(posParentTaxonomicRankID, cancellationToken);
+                    }
+                    else
+                    {
+                        parentTaxonomicRankID = null;
+                    }
+
+                    var taxonomicRankType = taxonomicRankTypes?.FirstOrDefault(t => t.TaxonomicRankTypeID == taxonomicRankTypeID);
+
+                    TaxonomicRank taxonomicRank = new(taxonomicRankID, name, taxonomicRankType?.TaxonomicRankTypeID ?? 0, parentTaxonomicRankID);
+                    taxonomicRanks.Add(taxonomicRank);
                 }
             }
             else
@@ -90,7 +112,7 @@ namespace AnimalLibrary.DAL
             return taxonomicRank;
         }
 
-        public bool Update(TaxonomicRank taxonomicRank)
+        public async Task<bool> UpdateAsync(TaxonomicRank taxonomicRank)
         {
             if (taxonomicRank is null)
             {
@@ -101,6 +123,8 @@ namespace AnimalLibrary.DAL
                 throw new ArgumentException($"{nameof(taxonomicRank.TaxonomicRankID)} must be provided and higher than zero", nameof(taxonomicRank));
             }
 
+            var returnValue = false;
+
             const string queryString = @"
             UPDATE [dbo].[TaxonomicRank]
                 SET [Name] = @Name
@@ -109,42 +133,58 @@ namespace AnimalLibrary.DAL
             WHERE [TaxonomicRankID]  = @TaxonomicRankID";
             using SqlConnection connection = new(
                        ConnectionString);
-            List<TaxonomicRankType> taxonomicRankTypes = new();
-
-            using SqlCommand command = new(
-                queryString, connection);
-            connection.Open();
-
-            command.Parameters.Add("@TaxonomicRankID", System.Data.SqlDbType.Int).Value = taxonomicRank.TaxonomicRankID;
-            command.Parameters.Add("@Name", System.Data.SqlDbType.NVarChar, 256).Value = taxonomicRank.Name;
-
-
-            var paramTaxonomicRankTypeID = new SqlParameter("@TaxonomicRankTypeID", System.Data.SqlDbType.Int);
-            if (taxonomicRank.TaxonomicRankTypeId != null)
+            await connection.OpenAsync();
+            SqlTransaction transaction;
+            using (transaction = connection.BeginTransaction())
             {
-                paramTaxonomicRankTypeID.Value = taxonomicRank.TaxonomicRankTypeId;
-            }
-            else
-            {
-                paramTaxonomicRankTypeID.SqlValue = DBNull.Value;
-            }
-            command.Parameters.Add(paramTaxonomicRankTypeID);
+                try
+                {
+                    List<TaxonomicRankType> taxonomicRankTypes = new();
 
-            var paramParentTaxonomicRankID = new SqlParameter("@ParentTaxonomicRankID", System.Data.SqlDbType.Int);
-            if (taxonomicRank.ParentTaxonomicRankID.HasValue)
-            {
-                paramParentTaxonomicRankID.Value = taxonomicRank.ParentTaxonomicRankID.Value;
+                    using SqlCommand command = new(
+                        queryString, connection);
+
+
+                    command.Parameters.Add("@TaxonomicRankID", System.Data.SqlDbType.Int).Value = taxonomicRank.TaxonomicRankID;
+                    command.Parameters.Add("@Name", System.Data.SqlDbType.NVarChar, 256).Value = taxonomicRank.Name;
+
+
+                    var paramTaxonomicRankTypeID = new SqlParameter("@TaxonomicRankTypeID", System.Data.SqlDbType.Int);
+                    if (taxonomicRank.TaxonomicRankTypeId != null)
+                    {
+                        paramTaxonomicRankTypeID.Value = taxonomicRank.TaxonomicRankTypeId;
+                    }
+                    else
+                    {
+                        paramTaxonomicRankTypeID.SqlValue = DBNull.Value;
+                    }
+                    command.Parameters.Add(paramTaxonomicRankTypeID);
+
+                    var paramParentTaxonomicRankID = new SqlParameter("@ParentTaxonomicRankID", System.Data.SqlDbType.Int);
+                    if (taxonomicRank.ParentTaxonomicRankID.HasValue)
+                    {
+                        paramParentTaxonomicRankID.Value = taxonomicRank.ParentTaxonomicRankID.Value;
+                    }
+                    else
+                    {
+                        paramParentTaxonomicRankID.SqlValue = DBNull.Value;
+                    }
+                    command.Parameters.Add(paramParentTaxonomicRankID);
+
+                    returnValue = await command.ExecuteNonQueryAsync() > 0;
+                    await transaction.CommitAsync();
+                }
+                catch
+                {
+                    returnValue = false;
+                    await transaction.RollbackAsync();
+                    throw;
+                }
             }
-            else
-            {
-                paramParentTaxonomicRankID.SqlValue = DBNull.Value;
-            }
-            command.Parameters.Add(paramParentTaxonomicRankID);
-                        
-            return command.ExecuteNonQuery() > 0;
+            return returnValue;
         }
 
-        public int Insert(TaxonomicRank taxonomicRank)
+        public async Task<int> InsertAsync(TaxonomicRank taxonomicRank)
         {
             if (taxonomicRank is null)
             {
@@ -154,7 +194,14 @@ namespace AnimalLibrary.DAL
 
             using SqlConnection connection = new(
                        ConnectionString);
-            const string insertString = @"
+            await connection.OpenAsync();
+            SqlTransaction transaction;
+            using (transaction = connection.BeginTransaction())
+            {
+                try
+                {
+
+                    const string insertString = @"
             INSERT INTO [dbo].[TaxonomicRank]
                 ([Name]
                 ,[TaxonomicRankTypeID]
@@ -163,46 +210,55 @@ namespace AnimalLibrary.DAL
                 (@Name
                 ,@TaxonomicRankTypeID
                 ,@ParentTaxonomicRankID);
-            SELECT SCOPE_IDENTITY() AS [TaxonomicRankID];";
-            using SqlCommand command = new(
-                insertString, connection);
-            connection.Open();
+            SELECT CAST(SCOPE_IDENTITY() AS INT) AS [TaxonomicRankID];";
+                    using SqlCommand command = new(
+                        insertString, connection);
 
-            command.Parameters.Add("@Name", System.Data.SqlDbType.NVarChar, 256).Value = taxonomicRank.Name;
-            var paramTaxonomicRankTypeID = new SqlParameter("@TaxonomicRankTypeID", System.Data.SqlDbType.Int);
-            if (taxonomicRank.TaxonomicRankTypeId != null)
-            {
-                paramTaxonomicRankTypeID.Value = taxonomicRank.TaxonomicRankTypeId;
-            }
-            else
-            {
-                paramTaxonomicRankTypeID.SqlValue = DBNull.Value;
-            }
-            command.Parameters.Add(paramTaxonomicRankTypeID);
 
-            var paramParentTaxonomicRankID = new SqlParameter("@ParentTaxonomicRankID", System.Data.SqlDbType.Int);
-            if (taxonomicRank.ParentTaxonomicRankID.HasValue && taxonomicRank.ParentTaxonomicRankID.Value>0)
-            {
-                paramParentTaxonomicRankID.Value = taxonomicRank.ParentTaxonomicRankID.Value;
-            }
-            else
-            {
-                paramParentTaxonomicRankID.SqlValue = DBNull.Value;
-            }
-            command.Parameters.Add(paramParentTaxonomicRankID);
+                    command.Parameters.Add("@Name", System.Data.SqlDbType.NVarChar, 256).Value = taxonomicRank.Name;
+                    var paramTaxonomicRankTypeID = new SqlParameter("@TaxonomicRankTypeID", System.Data.SqlDbType.Int);
+                    if (taxonomicRank.TaxonomicRankTypeId != null)
+                    {
+                        paramTaxonomicRankTypeID.Value = taxonomicRank.TaxonomicRankTypeId;
+                    }
+                    else
+                    {
+                        paramTaxonomicRankTypeID.SqlValue = DBNull.Value;
+                    }
+                    command.Parameters.Add(paramTaxonomicRankTypeID);
 
-            using SqlDataReader reader = command.ExecuteReader();
-            if (reader.HasRows)
-            {
-                if (reader.Read())
+                    var paramParentTaxonomicRankID = new SqlParameter("@ParentTaxonomicRankID", System.Data.SqlDbType.Int);
+                    if (taxonomicRank.ParentTaxonomicRankID.HasValue && taxonomicRank.ParentTaxonomicRankID.Value > 0)
+                    {
+                        paramParentTaxonomicRankID.Value = taxonomicRank.ParentTaxonomicRankID.Value;
+                    }
+                    else
+                    {
+                        paramParentTaxonomicRankID.SqlValue = DBNull.Value;
+                    }
+                    command.Parameters.Add(paramParentTaxonomicRankID);
+
+                    using SqlDataReader reader = command.ExecuteReader();
+                    if (reader.HasRows)
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            taxonomicRankId = await reader.GetFieldValueAsync<int>(reader.GetOrdinal("TaxonomicRankID"));
+                        }
+                    }
+                    else
+                    {
+                        Log.Warning($"Cannot insert {nameof(TaxonomicRank)}");
+                    }
+                    await transaction.CommitAsync();
+                }
+                catch
                 {
-                    taxonomicRankId = reader.GetInt32(reader.GetOrdinal("TaxonomicRankID"));
+                    await transaction.RollbackAsync();
+                    throw;
                 }
             }
-            else
-            {
-                Log.Warning($"Cannot insert {nameof(TaxonomicRank)}");
-            }
+
             return taxonomicRankId;
         }
 
@@ -228,7 +284,7 @@ namespace AnimalLibrary.DAL
 
             var taxonomicRankType = taxonomicRankTypes?.FirstOrDefault(t => t.TaxonomicRankTypeID == taxonomicRankTypeID);
 
-            TaxonomicRank taxonomicRank = new(taxonomicRankID, name, taxonomicRankType?.TaxonomicRankTypeID??0, parentTaxonomicRankID);
+            TaxonomicRank taxonomicRank = new(taxonomicRankID, name, taxonomicRankType?.TaxonomicRankTypeID ?? 0, parentTaxonomicRankID);
             return taxonomicRank;
         }
     }

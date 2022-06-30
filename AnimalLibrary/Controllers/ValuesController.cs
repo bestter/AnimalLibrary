@@ -38,21 +38,21 @@ namespace AnimalLibrary.Controllers
             }
         }
         
-        [Route("GetAll")]
-        public IEnumerable<TaxonomicRankType> GetAll(int id)
-        {
-            Log.Information($"In {nameof(ValuesController)}.{nameof(GetAll)}");
-            try
-            {
-                DAL.TaxonomicRankTypeDal taxonomicRankTypeDal = new(ConnectionString);
-                return taxonomicRankTypeDal.GetAll();
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, $"Error in {nameof(GetAll)}");
-                throw;
-            }
-        }
+        //[Route("GetAll")]
+        //public IEnumerable<TaxonomicRankType> GetAll(int id)
+        //{
+        //    Log.Information($"In {nameof(ValuesController)}.{nameof(GetAll)}");
+        //    try
+        //    {
+        //        DAL.TaxonomicRankTypeDal taxonomicRankTypeDal = new(ConnectionString);
+        //        return taxonomicRankTypeDal.GetAll();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Log.Error(ex, $"Error in {nameof(GetAll)}");
+        //        throw;
+        //    }
+        //}
         
         [HttpPost]
         [Route("UpdateTaxonomicRankType")]
@@ -90,18 +90,18 @@ namespace AnimalLibrary.Controllers
             }
         }
 
-        [Route("GetAllTaxonomicRank")]
-        public IEnumerable<TaxonomicRank> GetAllTaxonomicRank(int id)
+        [Route("GetAllTaxonomicRankAsync")]
+        public async Task<IEnumerable<TaxonomicRank>> GetAllTaxonomicRankAsync(int id, CancellationToken cancellationToken)
         {
-            Log.Information($"In {nameof(ValuesController)}.{nameof(GetAll)}");
+            Log.Information($"In {nameof(ValuesController)}.{nameof(GetAllTaxonomicRankAsync)}");
             try
             {
                 DAL.TaxonomicRankDal taxonomicRankDal = new(ConnectionString);
-                return taxonomicRankDal.GetAll();
+                return await taxonomicRankDal.GetAllAsync(cancellationToken);
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Error in {nameof(GetAllTaxonomicRank)}");
+                Log.Error(ex, $"Error in {nameof(GetAllTaxonomicRankAsync)}");
                 throw;
             }
         }
@@ -114,35 +114,35 @@ namespace AnimalLibrary.Controllers
         }
 
         [HttpPost]
-        [Route("UpdateTaxonomicRank")]
-        public bool UpdateTaxonomicRank(TaxonomicRank taxonomicRank)
+        [Route("UpdateTaxonomicRankAsync")]
+        public async Task<bool> UpdateTaxonomicRankAsync(TaxonomicRank taxonomicRank)
         {
             try
             {
                 DAL.TaxonomicRankDal taxonomicRankDal = new(ConnectionString);
-                taxonomicRankDal.Update(taxonomicRank);
+                await taxonomicRankDal.UpdateAsync(taxonomicRank);
                 return true;
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Error in {nameof(UpdateTaxonomicRank)}");
+                Log.Error(ex, $"Error in {nameof(UpdateTaxonomicRankAsync)}");
                 throw;
             }
         }
 
         [HttpPost]
-        [Route("InsertTaxonomicRank")]
-        public bool InsertTaxonomicRank(TaxonomicRank taxonomicRank)
+        [Route("InsertTaxonomicRankAsync")]
+        public async Task<bool> InsertTaxonomicRankAsync(TaxonomicRank taxonomicRank)
         {
             try
             {
                 DAL.TaxonomicRankDal taxonomicRankDal = new(ConnectionString);
-                var id = taxonomicRankDal.Insert(taxonomicRank);
+                var id = await taxonomicRankDal.InsertAsync(taxonomicRank);
                 return id>0;
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Error in {nameof(InsertTaxonomicRank)}");
+                Log.Error(ex, $"Error in {nameof(InsertTaxonomicRankAsync)}");
                 throw;
             }
         }

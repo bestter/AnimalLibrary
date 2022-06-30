@@ -17,10 +17,6 @@ export class TaxonomicRankDropdown extends Component {
         this.setState({ TaxonomicRanks: data });
     }
 
-    //onChange(e) {
-    //    debugger;
-    //    this.state.onchange(e);
-    //}
 
     createSelectItems() {
         this.populateTaxonomicRank();
