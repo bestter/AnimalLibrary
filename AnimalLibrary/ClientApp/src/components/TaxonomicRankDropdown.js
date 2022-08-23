@@ -8,30 +8,29 @@ export class TaxonomicRankDropdown extends Component {
             onChange: this.props.onChange,
             TaxonomicRanks: []            
         };
+        this.populateTaxonomicRank();
     }
 
-    
     async populateTaxonomicRank() {
-        const response = await fetch('values/GetAllTaxonomicRank');
+        const response = await fetch('values/GetAllTaxonomicRankAsync');
         const data = await response.json(); 
         this.setState({ TaxonomicRanks: data });
     }
 
 
-    createSelectItems() {
-        this.populateTaxonomicRank();
+    createSelectItems() {        
         
         let items = [];        
-        for (let i = 0; i < this.state.TaxonomicRanks.length; i++) {
+        for (let i = 0; i < this.state.TaxonomicRanks.length; i++) {            
             var TaxonomicRank = this.state.TaxonomicRanks[i];
-            items.push(<option key={TaxonomicRank.TaxonomicRankID} value={TaxonomicRank.TaxonomicRankID}>{TaxonomicRank.name}</option>);
+            items.push(<option key={TaxonomicRank.taxonomicRankID} value={TaxonomicRank.taxonomicRankID}>{TaxonomicRank.name}</option>);
         }
         return items;
     }
 
     render() {        
         let items = this.createSelectItems();
-        return (<select value={this.state.Value ?? -1} onChange={(e) => this.state.onChange(e)} name={ this.props.name }>
+        return (<select value={this.state.Value ?? -1} onChange={(e) => this.state.onChange(e)} name={this.props.name}>
             {items}
         </select>);
     }

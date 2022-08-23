@@ -14,7 +14,7 @@ namespace AnimalLibrary.DAL
             Log.Debug($"{nameof(connectionString)}: {connectionString}");
         }
 
-        public List<TaxonomicRankType> GetAll()
+        public async Task<List<TaxonomicRankType>> GetAllTaxonomicRankTypeAsync(CancellationToken cancellationToken)
         {            
             const string queryString = @"SELECT [TaxonomicRankTypeID] 
                 ,[Name]
@@ -29,13 +29,13 @@ namespace AnimalLibrary.DAL
 
             SqlCommand command = new(
                 queryString, connection);
-            connection.Open();
-            using SqlDataReader reader = command.ExecuteReader();
+            await connection.OpenAsync(cancellationToken);
+            using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
             if (reader.HasRows)
             {
-                while (reader.Read())
+                while (await reader.ReadAsync(cancellationToken))
                 {                    
-                    taxonomicRankTypes.Add(GetFromSqlDataReader(reader));
+                    taxonomicRankTypes.Add(await GetFromSqlDataReaderAsync(reader, cancellationToken));
                 }
             }
             else
@@ -45,7 +45,7 @@ namespace AnimalLibrary.DAL
             return taxonomicRankTypes;
         }
 
-        public TaxonomicRankType? Get(int id)
+        public async Task<TaxonomicRankType?> GetAsync(int id, CancellationToken cancellationToken)
         {
             TaxonomicRankType? taxonomicRankType = null;
             const string queryString = @"SELECT [TaxonomicRankTypeID] 
@@ -62,13 +62,13 @@ namespace AnimalLibrary.DAL
             using (SqlCommand command = new(
                 queryString, connection))
             {
-                connection.Open();
-                using SqlDataReader reader = command.ExecuteReader();
+                await connection.OpenAsync(cancellationToken);
+                using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
                 if (reader.HasRows)
                 {
-                    while (reader.Read())
+                    while (await reader.ReadAsync(cancellationToken))
                     {
-                        taxonomicRankType = GetFromSqlDataReader(reader);
+                        taxonomicRankType = await GetFromSqlDataReaderAsync(reader, cancellationToken);
                     }
                 }
                 else
@@ -117,19 +117,19 @@ namespace AnimalLibrary.DAL
         }
 
 
-        private static TaxonomicRankType GetFromSqlDataReader(SqlDataReader reader)
+        private static async Task<TaxonomicRankType> GetFromSqlDataReaderAsync(SqlDataReader reader, CancellationToken cancellationToken)
         {
             if (reader.IsClosed)
                 throw new NotSupportedException($"{nameof(SqlDataReader)} {nameof(reader)} is closed");
 
-            var taxonomicRankTypeID = reader.GetInt32(reader.GetOrdinal("TaxonomicRankTypeID"));
-            var name = reader.GetString(reader.GetOrdinal("Name"));
-            var nameFr = reader.GetString(reader.GetOrdinal("NameFr"));
+            var taxonomicRankTypeID = await reader.GetFieldValueAsync<int>(reader.GetOrdinal("TaxonomicRankTypeID"), cancellationToken);
+            var name = await reader.GetFieldValueAsync<string>(reader.GetOrdinal("Name"), cancellationToken);
+            var nameFr = await reader.GetFieldValueAsync<string>(reader.GetOrdinal("NameFr"), cancellationToken);
             var ordParentTaxonomicRankTypeID = reader.GetOrdinal("ParentTaxonomicRankTypeID");
             int? parentTaxonomicRankTypeID;
-            if (!reader.IsDBNull(ordParentTaxonomicRankTypeID))
+            if (! await reader.IsDBNullAsync(ordParentTaxonomicRankTypeID, cancellationToken))
             {
-                parentTaxonomicRankTypeID = reader.GetInt32(ordParentTaxonomicRankTypeID);
+                parentTaxonomicRankTypeID = await reader.GetFieldValueAsync<int>(ordParentTaxonomicRankTypeID);
             }
             else
             {

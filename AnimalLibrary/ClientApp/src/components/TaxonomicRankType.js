@@ -99,7 +99,7 @@ export class ReadTaxonomicRankType extends Component {
             return (
                 <ul className="list-group">
                     {
-                        this.state.taxonomicRankTypes.map((item, key) => {
+                        this.state.taxonomicRankTypes.map((item, key) => {                            
                             return <li className="list-group-item" key={item.taxonomicRankTypeID}> {item.name}<button onClick={() => { this.edit(item); }} className="btn btn-primary bi bi-pencil">edit</button></li>
                         })
                     }
@@ -111,7 +111,7 @@ export class ReadTaxonomicRankType extends Component {
         }
     }
     async populateTaxonomicRankType() {
-        const response = await fetch('values/GetAll');
+        const response = await fetch('values/GetAllTaxonomicRankTypeAsync');
         const data = await response.json();
         this.setState({ taxonomicRankTypes: data, loading: false });
     }

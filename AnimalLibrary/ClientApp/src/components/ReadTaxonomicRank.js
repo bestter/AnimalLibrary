@@ -8,8 +8,7 @@ export class ReadTaxonomicRank extends Component {
         this.state = { TaxonomicRanks: [], loading: true, selectedTR: null, newTr: false, emptyTr: null };        
     }
 
-    async componentDidMount() {
-        console.log('ReadTaxonomicRank componentDidMount');
+    async componentDidMount() {        
         await fetch('values/GetAllTaxonomicRankAsync')
             .then(resp => resp.json())
             .then(data => this.setState({ TaxonomicRanks: data }))
@@ -20,6 +19,7 @@ export class ReadTaxonomicRank extends Component {
     }
 
     edit(TaxonomicRank) {
+        console.dir(TaxonomicRank);
         this.setState({ selectedTR: TaxonomicRank });
     }
 
@@ -37,7 +37,7 @@ export class ReadTaxonomicRank extends Component {
         return (
             <div>
                 <div>
-                    <ReadTaxonomicRankSub newTr={ this.state.newTr} emptyTr={this.state.emptyTr} resetSelectedTR={() => this.resetSelectedTR()} selectedTR={this.state.selectedTR} TaxonomicRanks={this.state.TaxonomicRanks} edit={() => this.edit }/>
+                    <ReadTaxonomicRankSub newTr={ this.state.newTr} emptyTr={this.state.emptyTr} resetSelectedTR={() => this.resetSelectedTR()} selectedTR={this.state.selectedTR} TaxonomicRanks={this.state.TaxonomicRanks} edit={(item) => this.edit(item) }/>
                 </div>
                 <button type="button" className="btn btn-success" onClick={() => this.createElement()}>New</button>
             </div>
