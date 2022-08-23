@@ -12,7 +12,7 @@ namespace AnimalLibrary.DAL
         private TaxonomicRankDal(string connectionString)
         {
             ConnectionString = connectionString;
-            Log.Debug($"{nameof(connectionString)}: {connectionString}");            
+            Log.Debug($"{nameof(connectionString)}: {connectionString}");
         }
 
         private async Task<TaxonomicRankDal> InitializeAsync(CancellationToken cancellationToken)
@@ -26,7 +26,7 @@ namespace AnimalLibrary.DAL
             TaxonomicRankTypeDal taxonomicRankTypeDal = new(ConnectionString);
             return await taxonomicRankTypeDal.GetAllTaxonomicRankTypeAsync(cancellationToken);
         }
-    
+
         public async static Task<TaxonomicRankDal> CreateAsync(string connectionString, CancellationToken cancellationToken)
         {
             var ret = new TaxonomicRankDal(connectionString);
@@ -64,8 +64,8 @@ namespace AnimalLibrary.DAL
                     var name = await reader.GetFieldValueAsync<string>(posName, cancellationToken);
                     var taxonomicRankTypeID = await reader.GetFieldValueAsync<int>(posTaxonomicRankTypeID, cancellationToken);
 
-                    int? parentTaxonomicRankID;                    
-                    if (! await reader.IsDBNullAsync(posParentTaxonomicRankID, cancellationToken))
+                    int? parentTaxonomicRankID;
+                    if (!await reader.IsDBNullAsync(posParentTaxonomicRankID, cancellationToken))
                     {
                         parentTaxonomicRankID = await reader.GetFieldValueAsync<int>(posParentTaxonomicRankID, cancellationToken);
                     }
@@ -96,7 +96,8 @@ namespace AnimalLibrary.DAL
                 ,[TaxonomicRankTypeID]
                 ,[ParentTaxonomicRankID]
                 FROM [dbo].[TaxonomicRank]
-                WHERE TaxonomicRankID = @TaxonomicRankID";
+                WHERE TaxonomicRankID = @TaxonomicRankID
+                ORDER BY [TaxonomicRankTypeID], ISNULL([ParentTaxonomicRankID],0), [TaxonomicRankID]";
 
             using SqlConnection connection = new(
                        ConnectionString);
@@ -222,7 +223,7 @@ namespace AnimalLibrary.DAL
                 ,@ParentTaxonomicRankID);
             SELECT CAST(SCOPE_IDENTITY() AS INT) AS [TaxonomicRankID];";
                     using SqlCommand command = new(
-                        insertString, connection);
+                        insertString, connection, transaction);
 
                     command.Parameters.Add("@Name", System.Data.SqlDbType.NVarChar, 256).Value = taxonomicRank.Name;
                     var paramTaxonomicRankTypeID = new SqlParameter("@TaxonomicRankTypeID", System.Data.SqlDbType.Int);
@@ -247,22 +248,26 @@ namespace AnimalLibrary.DAL
                     }
                     command.Parameters.Add(paramParentTaxonomicRankID);
 
-                    using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
-                    if (reader.HasRows)
+                    using (SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken))
                     {
-                        if (await reader.ReadAsync(cancellationToken))
+                        if (reader.HasRows)
                         {
-                            taxonomicRankId = await reader.GetFieldValueAsync<int>(reader.GetOrdinal("TaxonomicRankID"), cancellationToken);
+                            if (await reader.ReadAsync(cancellationToken))
+                            {
+                                taxonomicRankId = await reader.GetFieldValueAsync<int>(reader.GetOrdinal("TaxonomicRankID"), cancellationToken);
+                            }
+                        }
+                        else
+                        {
+                            Log.Warning($"Cannot insert {nameof(TaxonomicRank)}");
                         }
                     }
-                    else
-                    {
-                        Log.Warning($"Cannot insert {nameof(TaxonomicRank)}");
-                    }
                     await transaction.CommitAsync(cancellationToken);
+
                 }
                 catch
                 {
+                    taxonomicRankId = -1;
                     await transaction.RollbackAsync(cancellationToken);
                     throw;
                 }
