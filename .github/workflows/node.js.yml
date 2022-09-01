@@ -27,6 +27,6 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'        
         cache-dependency-path: AnimalLibrary/ClientApp/package-lock.json
-    - run: npm ci
+    - run: npm --prefix /main/AnimalLibrary/ClientApp ci
     - run: npm --prefix /main/AnimalLibrary/ClientApp run build --if-present
-    - run: npm test
+    - run: npm --prefix /main/AnimalLibrary/ClientApp test
