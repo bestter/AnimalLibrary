@@ -41,7 +41,7 @@ namespace AnimalLibrary.DAL
                 ,[TaxonomicRankTypeID]
                 ,[ParentTaxonomicRankID]
                 FROM [dbo].[TaxonomicRank]
-                ORDER BY TaxonomicRankID";
+                ORDER BY ISNULL(TaxonomicRankTypeID,0), ISNULL(ParentTaxonomicRankID,0), TaxonomicRankID";
 
             using SqlConnection connection = new(
                        ConnectionString);
