@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Serilog;
+using System.Threading;
 
 namespace AnimalLibrary.Controllers
 {
@@ -157,6 +158,65 @@ namespace AnimalLibrary.Controllers
             catch (Exception ex)
             {
                 Log.Error(ex, $"Error in {nameof(InsertTaxonomicRankAsync)}");
+                throw;
+            }
+        }
+        #endregion
+
+        #region Species
+        [Route("GetEmptySpecie")]
+        public Specie GetEmptySpecie()
+        {
+            TaxonomicRank taxonomicRank = new(1, "test", 1, null);
+            return new Specie(0, "Empty", string.Empty, string.Empty, taxonomicRank);
+        }
+
+        [Route("GetSpeciesAsync")]
+        public async Task<List<Specie>> GetSpeciesAsync(CancellationToken cancellationToken)
+        {
+            Log.Information($"In {nameof(ValuesController)}.{nameof(GetSpeciesAsync)}");
+            try
+            {
+                DAL.SpecieDal specieDal = await DAL.SpecieDal.CreateAsync(ConnectionString, cancellationToken);
+                return await specieDal.GetSpeciesAsync(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, $"Error in {nameof(GetSpeciesAsync)}");
+                throw;
+            }
+        }
+
+        [HttpPost]
+        [Route("UpdateSpecieAsync")]
+        public async Task<bool> UpdateSpecieAsync(Specie specie, CancellationToken cancellationToken)
+        {
+            try
+            {
+                DAL.SpecieDal specieDal = await DAL.SpecieDal.CreateAsync(ConnectionString, cancellationToken);
+                var id = await specieDal.UpdateAsync(specie, cancellationToken);
+                return id > 0;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, $"Error in {nameof(UpdateSpecieAsync)}");
+                throw;
+            }
+        }
+
+        [HttpPost]
+        [Route("InsertSpecieAsync")]
+        public async Task<bool> InsertSpecieAsync(Specie specie, CancellationToken cancellationToken)
+        {
+            try
+            {
+                DAL.SpecieDal specieDal = await DAL.SpecieDal.CreateAsync(ConnectionString, cancellationToken);
+                var id = await specieDal.InsertAsync(specie, cancellationToken);
+                return id > 0;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, $"Error in {nameof(InsertSpecieAsync)}");
                 throw;
             }
         }

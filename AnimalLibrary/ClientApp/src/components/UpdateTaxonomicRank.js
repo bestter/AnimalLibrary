@@ -57,26 +57,27 @@ export class UpdateTaxonomicRank extends Component {
         return (
             <div>
                 <form onSubmit={(e) => this.handleSubmit(e)}>
-                    <div className="mb-3">
+                    <div className="mb-3 form-group">
                         <label htmlFor="TaxonomicRankID" className="form-label">ID</label>
-                        <input type="number" className="form-control" id="TaxonomicRankID" name="TaxonomicRankID" aria-describedby="TaxonomicRankIDHelp" value={this.state.TaxonomicRankID} disabled readOnly />
+                        <input type="number" className="form-control" id="TaxonomicRankID" name="TaxonomicRankID" aria-describedby="TaxonomicRankIDHelp" value={this.state.taxonomicRankID} disabled readOnly />
                         <div id="TaxonomicRankIDHelp" className="form-text">ID</div>
                     </div>
-                    <div className="mb-3">
+                    <div className="mb-3 form-group">
                         <label htmlFor="parentTaxonomicRankID" className="form-label">Parent's ID</label>
                         <TaxonomicRankDropdown value={this.state.parentTaxonomicRankID} id="parentTaxonomicRankID" name="parentTaxonomicRankID" onChange={(e) => this.handleChange(e)} aria-describedby="parentTaxonomicRankIDHelp" />
                         <div id="parentTaxonomicRankIDHelp" className="form-text">Parent's ID</div>
                     </div>
-                    <div className="mb-3">
+                    <div className="mb-3 form-group">
                         <label htmlFor="taxonomicRankTypeId" className="form-label">Rank type</label>
                         <TaxonomicRankTypeDropdown value={this.state.taxonomicRankTypeId} id="taxonomicRankTypeId" name="taxonomicRankTypeId" onChange={(e) => this.handleChange(e)} aria-describedby="taxonomicRankTypeIdHelp" />
                         <div id="taxonomicRankTypeIdHelp" className="form-text">taxonomicRankType</div>
                     </div>
-                    <div className="mb-3">
+                    <div className="mb-3 form-group">
                         <label htmlFor="=name" className="form-label">Name</label>
                         <input type="string" className="form-control" id="name" name="name" value={this.state.name} onChange={(e) => this.handleChange(e)} maxLength="256" required />
                     </div>
-                    <div className="mb-3">
+                    <div>&nbsp;</div>
+                    <div className="mb-3 form-group">
                         <button type="submit" className="btn btn-primary">Save</button>
                         <button type="button" className="btn btn-secondary" onClick={() => this.state.resetSelectedTR()}>Return</button>
                     </div>

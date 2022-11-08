@@ -6,6 +6,7 @@ import { FetchData } from './components/FetchData';
 import { Counter } from './components/Counter';
 import { TaxonomicRankType } from './components/TaxonomicRankType';
 import { TaxonomicRank } from './components/TaxonomicRank';
+import { Species } from './components/Species';
 
 import './custom.css'
 
@@ -20,6 +21,7 @@ export default class App extends Component {
             <Route path='/fetch-data' component={FetchData} />
             <Route path='/taxonomicRankType' component={TaxonomicRankType} />
             <Route path='/taxonomicRank' component={TaxonomicRank} />
+            <Route path='/species' component={Species} />
       </Layout>
     );
   }

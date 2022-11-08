@@ -10,7 +10,7 @@ namespace AnimalLibrary.DAL
 
         public TaxonomicRankTypeDal(string connectionString)
         {
-            ConnectionString = connectionString;
+            ConnectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
             Log.Debug($"{nameof(connectionString)}: {connectionString}");
         }
 
