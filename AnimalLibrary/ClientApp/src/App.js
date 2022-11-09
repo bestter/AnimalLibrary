@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { Route, Routes } from 'react-router-dom';
-import { Layout } from './components/Layout';
 import { Home } from './components/Home';
 import { FetchData } from './components/FetchData';
 import { Counter } from './components/Counter';
