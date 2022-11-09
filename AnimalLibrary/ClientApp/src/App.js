@@ -11,18 +11,20 @@ import { Species } from './components/Species';
 import './custom.css'
 
 export default class App extends Component {
-  static displayName = App.name;
+    static displayName = App.name;
 
-  render () {
-    return (
-      <Layout>
-        <Route exact path='/' component={Home} />
-        <Route path='/counter' component={Counter} />
-            <Route path='/fetch-data' component={FetchData} />
-            <Route path='/taxonomicRankType' component={TaxonomicRankType} />
-            <Route path='/taxonomicRank' component={TaxonomicRank} />
-            <Route path='/species' component={Species} />
-      </Layout>
-    );
-  }
+    render() {
+        return (
+            <Layout>
+                <Routes>
+                    <Route exact path='/' component={Home} />
+                    <Route path='/counter' component={Counter} />
+                    <Route path='/fetch-data' component={FetchData} />
+                    <Route path='/taxonomicRankType' component={TaxonomicRankType} />
+                    <Route path='/taxonomicRank' component={TaxonomicRank} />
+                    <Route path='/species' component={Species} />
+                </Routes>
+            </Layout>
+        );
+    }
 }
