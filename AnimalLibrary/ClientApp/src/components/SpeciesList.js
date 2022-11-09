@@ -2,11 +2,6 @@ import React, { Component } from 'react';
 
 export class SpeciesList extends Component {
 
-    constructor(props) {
-        super(props);        
-    }
-
-
     getSpecies() {
         let items = [];
         for (let i = 0; i < this.props.Species.length; i++) {
@@ -16,6 +11,7 @@ export class SpeciesList extends Component {
         return items;
 
     }
+
     render()
     {
         if (this.props.Species != null ) {
