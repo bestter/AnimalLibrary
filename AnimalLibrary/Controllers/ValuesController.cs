@@ -17,7 +17,12 @@ namespace AnimalLibrary.Controllers
         {
             IConfigurationBuilder configurationBuilder = new ConfigurationBuilder().AddJsonFile("appsettings.json", false, true);
             IConfigurationRoot root = configurationBuilder.Build();
-            ConnectionString = root.GetConnectionString("AnimalDirectoryDatabase");
+            var connectionString = root.GetConnectionString("AnimalDirectoryDatabase");
+            if (connectionString == null)
+            {
+                throw new NotSupportedException($"Connection string for AnimalDirectoryDatabase cannot be null!");
+            }
+            ConnectionString = connectionString;
             Log.Logger.Verbose($"{nameof(ConnectionString)}: {ConnectionString}");
         }
 
