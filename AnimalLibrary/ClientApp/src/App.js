@@ -16,14 +16,13 @@ export default class App extends Component {
     render() {
         return (
             <Layout>
-                <Routes>
                     <Route exact path='/' component={Home} />
                     <Route path='/counter' component={Counter} />
                     <Route path='/fetch-data' component={FetchData} />
                     <Route path='/taxonomicRankType' component={TaxonomicRankType} />
                     <Route path='/taxonomicRank' component={TaxonomicRank} />
                     <Route path='/species' component={Species} />
-                </Routes>
+                
             </Layout>
         );
     }
