@@ -15,6 +15,7 @@
     <Copyright>© 2022 Martin Labelle</Copyright>
     <Company>Martin Labelle</Company>
     <Authors>Martin Labelle</Authors>
+    <PackageLicenseFile>COPYING.txt</PackageLicenseFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -42,6 +43,13 @@
     <None Remove="$(SpaRoot)**" />
     <None Remove="logs\**" />
     <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="COPYING.txt">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
